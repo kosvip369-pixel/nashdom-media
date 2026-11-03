@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Наш дом. Медиа — рекламные стенды в лифтах Удомли: 207 лифтов, 67 домов, 2/3 города.">
+<title>Наш дом. Медиа</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: поездка на лифте — каждый раздел это этаж; фиксированное табло этажа справа сверху, тёмная кабина + тёплый латунный свет */
+:root{
+  color-scheme:dark;
+  --ink:#0d1524;        /* кабина ночью */
+  --ink-2:#142036;      /* панели */
+  --ink-3:#1c2b45;      /* линии, поля */
+  --steel:#8f9bb0;      /* шлифованная сталь, вторичный текст */
+  --cream:#f3ead9;      /* основной текст, тёплый белый */
+  --brass:#e2a64b;      /* свет кабины, акцент */
+  --brass-2:#f5c97f;
+  --led:#ff6a3d;        /* цифры табло */
+  --line:rgba(243,234,217,.12);
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Golos Text","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --wrap:1240px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--cream);font-family:var(--f-body);font-size:17px;line-height:1.55;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--ink)}
+img{max-width:100%;display:block}
+a{color:inherit}
+::selection{background:var(--brass);color:var(--ink)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;line-height:1.05;letter-spacing:-.02em;text-wrap:balance;margin:0}
+h2{font-size:clamp(30px,4.6vw,58px)}
+h3{font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor}
+.lead{font-size:clamp(17px,1.6vw,20px);color:var(--steel);max-width:60ch}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:16px 26px;border-radius:999px;font-weight:600;font-size:16px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:transform .25s,background .25s,box-shadow .25s;font-family:var(--f-body)}
+.btn-main{background:var(--brass);color:var(--ink);box-shadow:0 10px 40px -10px rgba(226,166,75,.6)}
+.btn-main:hover{transform:translateY(-2px);background:var(--brass-2)}
+.btn-ghost{border-color:var(--line);color:var(--cream);background:transparent}
+.btn-ghost:hover{border-color:var(--brass);color:var(--brass-2)}
+
+/* ---------- header ---------- */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;backdrop-filter:blur(14px);background:rgba(13,21,36,.72);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:24px;height:68px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;font-family:var(--f-display);font-weight:600;font-size:17px;letter-spacing:-.01em;white-space:nowrap}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:var(--brass);display:grid;place-items:center;flex:none}
+.logo-mark svg{width:20px;height:20px}
+.logo b{color:var(--brass)}
+nav.menu{display:flex;gap:26px;margin-left:auto;font-size:15px}
+nav.menu a{text-decoration:none;color:var(--steel);transition:color .2s}
+nav.menu a:hover{color:var(--cream)}
+.top .btn{padding:11px 20px;font-size:14px}
+@media (max-width:980px){nav.menu{display:none}.top .btn{margin-left:auto}}
+@media (max-width:460px){.top .btn{display:none}}
+
+/* ---------- floor indicator ---------- */
+.floor{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 18px));z-index:55;background:#05080f;border:1px solid var(--ink-3);border-radius:14px;padding:10px 14px 10px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 18px 50px -12px rgba(0,0,0,.7)}
+.floor-arrow{font-family:var(--f-mono);color:var(--led);font-size:14px;width:12px;text-align:center;transition:transform .3s}
+.floor-arrow.down{transform:rotate(180deg)}
+.floor-num{font-family:var(--f-mono);font-weight:700;font-size:30px;color:var(--led);text-shadow:0 0 12px rgba(255,106,61,.7);min-width:2ch;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
+.floor-label{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);line-height:1.3;max-width:13ch}
+.floor-num.flip{animation:flip .35s ease}
+@keyframes flip{0%{opacity:.2;transform:translateY(-6px)}100%{opacity:1;transform:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding-block:56px 72px;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:auto -20% -40% 30%;height:70%;background:radial-gradient(closest-side,rgba(226,166,75,.18),transparent);pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.hero-text{display:grid;gap:26px;min-width:0}
+.hero h1{font-size:clamp(38px,5.6vw,78px)}
+.hero h1 em{font-style:normal;color:var(--brass);display:block}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:14px}
+.ticker{display:flex;align-items:center;gap:14px;font-family:var(--f-mono);font-size:13px;color:var(--steel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;width:fit-content;max-width:100%;flex-wrap:wrap}
+.ticker b{color:var(--led);font-weight:700;text-shadow:0 0 10px rgba(255,106,61,.45)}
+.dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 0 rgba(61,220,132,.6);animation:pulse 2s infinite;flex:none}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(61,220,132,0)}100%{box-shadow:0 0 0 0 rgba(61,220,132,0)}}
+
+.lift{position:relative;aspect-ratio:4/4.6;max-width:100%;border-radius:22px;overflow:hidden;background:#000;box-shadow:0 40px 90px -30px rgba(0,0,0,.9),0 0 0 1px var(--ink-3);perspective:900px}
+.lift>img{width:100%;height:100%;object-fit:cover;transform:scale(1.12);animation:liftzoom 2.6s cubic-bezier(.2,.7,.2,1) .5s forwards}
+@keyframes liftzoom{to{transform:scale(1)}}
+.door{position:absolute;top:0;bottom:0;width:50%;background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),
+  linear-gradient(100deg,#5f6878,#a7b0bf 35%,#6c7586 60%,#9aa3b3);
+  z-index:2;animation-duration:1.5s;animation-timing-function:cubic-bezier(.65,0,.25,1);animation-delay:.6s;animation-fill-mode:forwards}
+.door.l{left:0;animation-name:openL;border-right:1px solid #2b3240}
+.door.r{right:0;animation-name:openR;border-left:1px solid #c8d0dc}
+@keyframes openL{to{transform:translateX(-101%)}}
+@keyframes openR{to{transform:translateX(101%)}}
+.lift-panel{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:3;background:#05080f;border-radius:8px;padding:6px 14px;font-family:var(--f-mono);font-weight:700;color:var(--led);font-size:18px;text-shadow:0 0 10px rgba(255,106,61,.7);display:flex;gap:10px;align-items:center}
+.lift-caption{position:absolute;left:16px;right:16px;bottom:16px;z-index:3;background:rgba(5,8,15,.72);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--steel);opacity:0;animation:fadeup .7s ease 2s forwards}
+.lift-caption strong{color:var(--cream);font-weight:600}
+@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:56px}
+.stat{background:var(--ink);padding:24px 22px;display:grid;gap:6px}
+.stat-n{font-family:var(--f-display);font-weight:600;font-size:clamp(28px,3.4vw,44px);color:var(--cream);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat-n small{font-size:.5em;color:var(--brass)}
+.stat-t{font-size:14px;color:var(--steel)}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px}.lift{aspect-ratio:4/3.6}.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- sections ---------- */
+section.s{padding-block:clamp(72px,10vw,130px);position:relative}
+.s-head{display:grid;gap:18px;margin-bottom:48px;max-width:820px}
+.alt{background:var(--ink-2)}
+
+/* reveal: виден по умолчанию; где поддерживается scroll-timeline — мягко въезжает */
+@supports (animation-timeline:view()){
+  .rv{animation:rv linear both;animation-timeline:view();animation-range:entry 0% entry 40%}
+  @keyframes rv{from{transform:translateY(36px)}to{transform:none}}
+}
+
+/* ---------- why lift ---------- */
+.why{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}
+.why-photo{border-radius:22px;overflow:hidden;position:relative;min-height:420px}
+.why-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.why-photo .badge{position:absolute;left:18px;bottom:18px;background:var(--brass);color:var(--ink);border-radius:14px;padding:14px 18px;font-family:var(--f-display);font-weight:600;font-size:15px;line-height:1.25;max-width:260px}
+.why-photo .badge span{display:block;font-size:34px;font-weight:800}
+.why-list{display:grid;gap:14px;align-content:start}
+.why-item{border:1px solid var(--line);border-radius:18px;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;transition:border-color .3s,background .3s}
+.why-item:hover{border-color:rgba(226,166,75,.5);background:rgba(226,166,75,.04)}
+.why-ic{width:44px;height:44px;border-radius:12px;background:var(--ink-3);display:grid;place-items:center;color:var(--brass)}
+.why-ic svg{width:22px;height:22px}
+.why-item p{color:var(--steel);font-size:15.5px;margin-top:6px}
+@media (max-width:900px){.why{grid-template-columns:1fr}.why-photo{min-height:340px}}
+
+/* ---------- board configurator ---------- */
+.config{display:grid;grid-template-columns:1.15fr 1fr;gap:40px;align-items:start}
+.board-wrap{display:grid;gap:16px;min-width:0}
+.board{aspect-ratio:841/594;background:linear-gradient(145deg,#c9d0db,#8a93a3);border-radius:14px;padding:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 30px 60px -25px rgba(0,0,0,.8);position:relative}
+.board::before{content:"";position:absolute;right:20px;top:50%;width:10px;height:10px;border-radius:50%;background:#4a5262;box-shadow:inset 0 1px 2px #000;transform:translateY(-50%)}
+.board-in{width:100%;height:100%;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:5px;background:#e9edf2;border-radius:6px;padding:5px;position:relative;overflow:hidden}
+.board-in::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.35) 0 18%,transparent 30% 100%);pointer-events:none}
+.cell{border-radius:4px;background:#d5dbe3;position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);gap:3px;padding:0;overflow:hidden}
+.cell.house{background:#20304d;color:#f3ead9;font-family:var(--f-mono);font-size:clamp(7px,.9vw,10px);display:flex;flex-direction:column;justify-content:space-between;padding:8px;letter-spacing:.04em}
+.cell.house b{font-family:var(--f-display);font-size:clamp(9px,1.1vw,13px);font-weight:600;letter-spacing:0}
+.sub{background:#c3cbd6;border-radius:2px;transition:background .35s,transform .35s}
+.sub.on{background:var(--brass);transform:scale(.97)}
+.sub.on.x{background:var(--brass-2)}
+.board-legend{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--steel);font-family:var(--f-mono)}
+.board-legend span{display:inline-flex;align-items:center;gap:8px}
+.board-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+.panel{background:var(--ink);border:1px solid var(--line);border-radius:22px;padding:26px;display:grid;gap:24px}
+.alt .panel{background:var(--ink)}
+.field{display:grid;gap:10px}
+.field-l{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--line);background:transparent;color:var(--cream);border-radius:10px;padding:10px 13px;font-family:var(--f-body);font-size:14.5px;cursor:pointer;transition:all .2s;display:grid;gap:2px;text-align:left}
+.chip small{font-size:11.5px;color:var(--steel)}
+.chip:hover{border-color:rgba(226,166,75,.6)}
+.chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--ink)}
+.chip[aria-pressed="true"] small{color:rgba(13,21,36,.7)}
+.result{border-top:1px dashed var(--line);padding-top:22px;display:grid;gap:14px}
+.price{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,4vw,50px);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.price small{font-size:.38em;font-weight:400;color:var(--steel);letter-spacing:0;margin-left:6px}
+.res-rows{display:grid;grid-template-columns:1fr auto;gap:8px 16px;font-size:14.5px;color:var(--steel)}
+.res-rows b{color:var(--cream);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--steel);line-height:1.5}
+@media (max-width:980px){.config{grid-template-columns:1fr}}
+
+/* ---------- map ---------- */
+.map-sec{position:relative;overflow:hidden}
+.map-bg{position:absolute;inset:0;z-index:0}
+.map-bg img{width:100%;height:100%;object-fit:cover;opacity:.32}
+.map-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--ink) 0%,rgba(13,21,36,.55) 35%,rgba(13,21,36,.8) 75%,var(--ink) 100%)}
+.map-sec .wrap{position:relative;z-index:1}
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.zmap{position:relative;aspect-ratio:1/1;max-width:520px;width:100%;justify-self:center}
+.zmap svg{width:100%;height:100%;overflow:visible}
+.zone-shape{cursor:pointer;transition:fill .3s,stroke .3s}
+.zone-shape path{fill:rgba(243,234,217,.06);stroke:rgba(243,234,217,.35);stroke-width:1.5;transition:fill .3s,stroke .3s}
+.zone-shape:hover path,.zone-shape.sel path{fill:rgba(226,166,75,.28);stroke:var(--brass)}
+.zone-shape text{fill:var(--cream);font-family:var(--f-display);font-weight:600;font-size:15px;pointer-events:none}
+.zone-shape .zt{font-family:var(--f-mono);font-size:10.5px;font-weight:500;fill:var(--steel)}
+.zone-shape circle{fill:var(--brass)}
+.zone-shape .pulse{fill:none;stroke:var(--brass);animation:ring 2.6s infinite}
+@keyframes ring{0%{r:4;opacity:.9}100%{r:22;opacity:0}}
+.rail{stroke:var(--steel);stroke-width:3;stroke-dasharray:10 6;fill:none;opacity:.6}
+.zlist{display:grid;gap:12px}
+.zrow{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(13,21,36,.6);backdrop-filter:blur(6px);cursor:pointer;transition:border-color .25s,background .25s;text-align:left;color:inherit;font:inherit;width:100%}
+.zrow:hover,.zrow.sel{border-color:var(--brass);background:rgba(226,166,75,.08)}
+.zrow .zn{font-family:var(--f-mono);font-size:13px;color:var(--brass);border:1px solid rgba(226,166,75,.4);border-radius:8px;padding:6px 9px}
+.zrow h3{font-size:17px}
+.zrow p{font-size:13.5px;color:var(--steel);margin-top:4px}
+.zrow .zl{font-family:var(--f-display);font-weight:600;font-size:24px;text-align:right;line-height:1}
+.zrow .zl small{display:block;font-family:var(--f-mono);font-size:10.5px;font-weight:500;color:var(--steel);letter-spacing:.1em;margin-top:6px}
+@media (max-width:900px){.zones{grid-template-columns:1fr}}
+
+/* ---------- process ---------- */
+.proc{display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:center}
+.proc-photo{border-radius:22px;overflow:hidden;aspect-ratio:4/5;position:relative}
+.proc-photo img{width:100%;height:100%;object-fit:cover}
+.cal{position:absolute;right:16px;top:16px;background:var(--cream);color:var(--ink);border-radius:14px;padding:12px 14px;font-family:var(--f-mono);font-size:12px;display:grid;grid-template-columns:repeat(7,22px);gap:3px;text-align:center;box-shadow:0 20px 40px -10px rgba(0,0,0,.6)}
+.cal b{grid-column:1/-1;font-family:var(--f-display);font-size:12px;text-align:left;margin-bottom:4px;text-transform:capitalize}
+.cal span{height:20px;line-height:20px;border-radius:5px}
+.cal span.w{background:var(--led);color:#fff;font-weight:700}
+.cal span.d{background:rgba(13,21,36,.12)}
+.steps{display:grid;gap:0;counter-reset:st}
+.step{display:grid;grid-template-columns:64px 1fr;gap:20px;padding-block:22px;border-top:1px solid var(--line)}
+.step:last-child{border-bottom:1px solid var(--line)}
+.step-n{font-family:var(--f-mono);font-weight:700;color:var(--brass);font-size:13px;letter-spacing:.06em;padding-top:4px}
+.step p{color:var(--steel);font-size:15.5px;margin-top:6px}
+@media (max-width:900px){.proc{grid-template-columns:1fr}.proc-photo{aspect-ratio:4/3.4}}
+
+/* ---------- clients ---------- */
+.clients{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+.cl-card{border-radius:22px;overflow:hidden;position:relative;min-height:440px;display:flex;align-items:flex-end}
+.cl-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.cl-card:hover img{transform:scale(1.05)}
+.cl-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(5,8,15,.92))}
+.cl-body{position:relative;z-index:1;padding:26px;display:grid;gap:10px}
+.cl-body p{color:#c9cfdb;font-size:15px}
+.tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass-2)}
+.c-a{grid-column:span 5}.c-b{grid-column:span 4}
+.segs{grid-column:span 3;border:1px solid var(--line);border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.segs ul{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.segs li{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.segs li span{color:var(--steel);font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
+@media (max-width:1060px){.c-a,.c-b{grid-column:span 6}.segs{grid-column:span 12}}
+@media (max-width:640px){.c-a,.c-b{grid-column:span 12}.cl-card{min-height:380px}}
+
+.marquee{overflow:hidden;border-block:1px solid var(--line);padding-block:22px;margin-top:64px;mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.mq-track{display:flex;gap:48px;width:max-content;animation:mq 38s linear infinite;font-family:var(--f-display);font-weight:600;font-size:clamp(20px,2.6vw,32px);color:var(--steel);white-space:nowrap}
+.mq-track span:nth-child(odd){color:var(--cream)}
+.mq-track i{color:var(--brass);font-style:normal}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* ---------- УК ---------- */
+.uk{display:grid;grid-template-columns:1.1fr 1fr;gap:44px;align-items:center}
+.uk-photo{border-radius:22px;overflow:hidden;position:relative}
+.uk-photo img{width:100%;aspect-ratio:16/10.5;object-fit:cover}
+.uk-photo .frame{position:absolute;right:-1px;bottom:-1px;width:42%;border-top-left-radius:18px;overflow:hidden;border:6px solid var(--ink-2);border-right:0;border-bottom:0}
+.uk-photo .frame img{aspect-ratio:4/3}
+.uk-list{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.uk-item{border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:8px;align-content:start}
+.uk-item h3{font-size:16px}
+.uk-item p{font-size:14.5px;color:var(--steel)}
+@media (max-width:980px){.uk{grid-template-columns:1fr}}
+@media (max-width:520px){.uk-list{grid-template-columns:1fr}}
+
+/* ---------- contact ---------- */
+.cta{border-radius:28px;background:radial-gradient(120% 140% at 100% 0%,rgba(226,166,75,.28),transparent 55%),var(--ink-2);border:1px solid var(--line);padding:clamp(28px,5vw,64px);display:grid;grid-template-columns:1.1fr 1fr;gap:48px}
+.cta h2{font-size:clamp(30px,4vw,52px)}
+.contact-card{display:grid;gap:18px;align-content:start}
+.person{display:flex;align-items:center;gap:16px}
+.ava{width:56px;height:56px;border-radius:50%;background:var(--brass);color:var(--ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:20px;flex:none}
+.phone{font-family:var(--f-display);font-weight:600;font-size:clamp(24px,3vw,34px);letter-spacing:-.01em;user-select:all}
+form.req{display:grid;gap:12px}
+.inp{width:100%;background:var(--ink);border:1px solid var(--ink-3);border-radius:12px;padding:14px 16px;color:var(--cream);font:inherit;font-size:16px;transition:border-color .2s}
+.inp:focus{outline:none;border-color:var(--brass)}
+.inp::placeholder{color:#64708a}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.out{display:grid;gap:10px;border:1px solid rgba(226,166,75,.45);border-radius:14px;padding:16px;background:rgba(226,166,75,.06);font-size:14.5px}
+.out pre{margin:0;white-space:pre-wrap;font-family:var(--f-body);color:var(--cream)}
+@media (max-width:900px){.cta{grid-template-columns:1fr}}
+@media (max-width:480px){.row2{grid-template-columns:1fr}}
+
+footer{padding-block:48px 110px;color:var(--steel);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:28px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important}
+  .mq-track{animation:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#home" aria-label="Наш дом. Медиа — на главную">
+      <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#0d1524" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M3 11 12 4l9 7"/><path d="M6 10v10h12V10"/><path d="M10 20v-5h4v5"/></svg></span>
+      <span>Наш дом.<b> Медиа</b></span>
+    </a>
+    <nav class="menu" aria-label="Разделы">
+      <a href="#why">Почему лифт</a>
+      <a href="#price">Форматы и цены</a>
+      <a href="#map">Зоны</a>
+      <a href="#how">Как работаем</a>
+      <a href="#uk">Для УК</a>
+    </nav>
+    <a class="btn btn-main" href="#contact">Разместить рекламу</a>
+  </div>
+</header>
+
+<div class="floor" aria-live="polite">
+  <span class="floor-arrow" id="fArrow">▲</span>
+  <span class="floor-num" id="fNum">1</span>
+  <span class="floor-label" id="fLabel">Этаж<br>Главная</span>
+</div>
+
+<main>
+<!-- 1 -->
+<section class="hero" id="home" data-floor="1" data-name="Главная">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <span class="eyebrow">Стенды в лифтах Удомли</span>
+        <h1>Реклама, которая едет<em>с жителями домой</em></h1>
+        <p class="lead">Информационные стенды А1 в кабинах 207 лифтов города. Каждый житель видит ваш модуль по 2–4 раза в день и смотрит на него 20–40 секунд, пока едет на свой этаж.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-main" href="#price">Рассчитать стоимость →</a>
+          <a class="btn btn-ghost" href="#uk">Я из управляющей компании</a>
+        </div>
+        <div class="ticker"><span class="dot"></span><span>Следующий выпуск: <b id="nextWave">—</b></span><span>Приём макетов до <b id="nextDeadline">—</b></span></div>
+      </div>
+      <div class="lift">
+        <img src="lift.webp" alt="Стенд А1 с сеткой рекламных модулей в кабине лифта">
+        <div class="door l"></div><div class="door r"></div>
+        <div class="lift-panel"><span>▲</span><span id="liftCount">1</span></div>
+        <div class="lift-caption"><span><strong>Стенд А1</strong> · 8 ячеек А4</span><span>обновление 1-го и 15-го</span></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-n" data-count="207">207</span><span class="stat-t">лифтов со стендами</span></div>
+      <div class="stat"><span class="stat-n" data-count="67">67</span><span class="stat-t">многоэтажных домов, 6–16 этажей</span></div>
+      <div class="stat"><span class="stat-n"><span data-count="15500">15 500</span></span><span class="stat-t">жителей видят стенды каждый день</span></div>
+      <div class="stat"><span class="stat-n"><span data-count="63">63</span><small>%</small></span><span class="stat-t">населения города</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="s alt" id="why" data-floor="2" data-name="Почему лифт">
+  <div class="wrap">
+    <div class="s-head rv">
+      <span class="eyebrow">Почему лифт</span>
+      <h2>Самые внимательные 30 секунд дня</h2>
+      <p class="lead">В лифте нет ленты, которую можно пролистать. Человек стоит лицом к стенду и читает, пока едет. Так ваш модуль видят каждый день те, кто живёт рядом с вами.</p>
+    </div>
+    <div class="why">
+      <div class="why-photo rv">
+        <img src="residents.webp" alt="Семья в лифте смотрит на информационный стенд">
+        <div class="badge"><span>2–4</span>поездки в день у каждого жителя</div>
+      </div>
+      <div class="why-list">
+        <div class="why-item rv"><span class="why-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><h3>20–40 секунд внимания</h3><p>Столько длится поездка с 1-го на 9-й этаж. Листовку в ящике выбрасывают за 2 секунды, баннер в ленте пролистывают ещё быстрее.</p></div></div>
+        <div class="why-item rv"><span class="why-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg></span><div><h3>Только Удомля, без лишних показов</h3><p>Весь многоэтажный город умещается в квадрат 1,6 × 1,8 км. Вы не платите за людей из других городов. Каждый, кто увидел модуль, может дойти до вас пешком.</p></div></div>
+        <div class="why-item rv"><span class="why-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></span><div><h3>Аккуратный стенд, которому доверяют</h3><p>Весь лист свёрстан в едином стиле и закрыт антивандальным коробом. Одна ячейка отдана дому: телефоны УК и аварийных служб. Поэтому стенд читают как полезный, а не как рекламу.</p></div></div>
+        <div class="why-item rv"><span class="why-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16v12H4z"/><circle cx="12" cy="13" r="3"/><path d="M9 7l1.5-3h3L15 7"/></svg></span><div><h3>Фотоотчёт по каждому адресу</h3><p>В течение двух дней после выхода вы получаете фото стендов с адресами. Видно, где именно висит ваша реклама.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="s" id="price" data-floor="3" data-name="Цены">
+  <div class="wrap">
+    <div class="s-head rv">
+      <span class="eyebrow">Форматы и цены</span>
+      <h2>Соберите размещение</h2>
+      <p class="lead">Стенд А1 разделён на 8 ячеек А4. Вы выбираете размер модуля, зоны города и срок, а мы бесплатно делаем макет и печать. Цена ниже за месяц, во всех лифтах выбранных зон.</p>
+    </div>
+    <div class="config">
+      <div class="board-wrap rv">
+        <div class="board" aria-hidden="true"><div class="board-in" id="board"></div></div>
+        <div class="board-legend">
+          <span><i style="background:var(--brass)"></i>ваш модуль</span>
+          <span><i style="background:#20304d"></i>ячейка дома (бесплатно для УК)</span>
+          <span>841 × 594 мм</span>
+        </div>
+      </div>
+      <div class="panel rv">
+        <div class="field">
+          <span class="field-l" id="lblFormat">Размер модуля</span>
+          <div class="chips" id="formats" role="group" aria-labelledby="lblFormat"></div>
+        </div>
+        <div class="field">
+          <span class="field-l" id="lblZones">Зоны города</span>
+          <div class="chips" id="zonesChips" role="group" aria-labelledby="lblZones"></div>
+        </div>
+        <div class="field">
+          <span class="field-l" id="lblTerm">Срок</span>
+          <div class="chips" id="terms" role="group" aria-labelledby="lblTerm"></div>
+        </div>
+        <div class="result">
+          <div class="price"><span id="pMonth">0</span> ₽<small>в месяц</small></div>
+          <div class="res-rows">
+            <span>Лифтов со стендом</span><b id="rLifts">0</b>
+            <span>Квартир в этих домах</span><b id="rFlats">0</b>
+            <span>Скидка</span><b id="rDisc">0 %</b>
+            <span>Итого за срок</span><b id="rTotal">0 ₽</b>
+            <span>За одного жителя в месяц</span><b id="rPer">0 ₽</b>
+          </div>
+          <p class="note">Это ориентир по базовому прайсу. Если выбираете отдельные адреса, а не зону, цена выше на 30 %. Эксклюзив в категории (например, единственное такси на стенде) обсуждаем отдельно.</p>
+          <a class="btn btn-main" href="#contact" id="toForm" style="justify-self:start">Оставить заявку на этот расчёт →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="s map-sec" id="map" data-floor="4" data-name="Зоны">
+  <div class="map-bg"><img src="town.webp" alt=""></div>
+  <div class="wrap">
+    <div class="s-head rv">
+      <span class="eyebrow">Четыре зоны</span>
+      <h2>Весь многоэтажный город</h2>
+      <p class="lead">Новая Удомля южнее железной дороги поделена на четыре примерно равные зоны, в каждой около 50 лифтов. Можно начать с одной зоны рядом с вами или сразу взять весь город. Нажмите на зону, и она добавится в расчёт.</p>
+    </div>
+    <div class="zones">
+      <div class="zmap rv">
+        <svg viewBox="0 0 400 400" role="img" aria-label="Схема четырёх зон Удомли">
+          <path class="rail" d="M10 46 C120 30 260 34 392 22"/>
+          <text x="300" y="18" fill="#8f9bb0" font-family="JetBrains Mono, monospace" font-size="10">ж/д · старый город</text>
+          <g class="zone-shape" data-z="0"><path d="M40 70 L196 66 L192 196 L52 204 Z"/><circle cx="118" cy="140" r="4"/><circle class="pulse" cx="118" cy="140" r="4"/><text x="70" y="104">Попова</text><text class="zt" x="70" y="122">51 лифт · З1</text></g>
+          <g class="zone-shape" data-z="1"><path d="M204 66 L364 60 L356 200 L200 196 Z"/><circle cx="282" cy="140" r="4"/><circle class="pulse" cx="282" cy="140" r="4"/><text x="226" y="104">Космонавтов</text><text class="zt" x="226" y="122">53 лифта · З2</text></g>
+          <g class="zone-shape" data-z="2"><path d="M52 212 L192 204 L188 344 L70 352 Z"/><circle cx="124" cy="282" r="4"/><circle class="pulse" cx="124" cy="282" r="4"/><text x="74" y="246">Курчатова</text><text class="zt" x="74" y="264">54 лифта · З3</text></g>
+          <g class="zone-shape" data-z="3"><path d="M200 204 L356 208 L340 356 L196 344 Z"/><circle cx="270" cy="286" r="4"/><circle class="pulse" cx="270" cy="286" r="4"/><text x="218" y="246">Энтузиастов</text><text class="zt" x="218" y="264">49 лифтов · З4</text></g>
+          <path d="M14 200 H390" stroke="#e2a64b" stroke-width="1" stroke-dasharray="3 5" opacity=".5"/>
+          <text x="14" y="194" fill="#e2a64b" font-family="JetBrains Mono, monospace" font-size="10" opacity=".8">пр-кт Курчатова</text>
+        </svg>
+      </div>
+      <div class="zlist" id="zlist"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="s alt" id="how" data-floor="5" data-name="Как работаем">
+  <div class="wrap">
+    <div class="proc">
+      <div class="proc-photo rv">
+        <img src="service.webp" alt="Сервисный специалист меняет лист в стенде и снимает фотоотчёт">
+        <div class="cal" id="cal" aria-label="Календарь выходов"></div>
+      </div>
+      <div>
+        <div class="s-head rv" style="margin-bottom:28px">
+          <span class="eyebrow">Как работаем</span>
+          <h2>Два выпуска в месяц, как часы</h2>
+          <p class="lead">Стенды обновляются 1-го и 15-го числа. Начать можно с любого ближайшего выпуска. Минимальный срок — один месяц.</p>
+        </div>
+        <div class="steps">
+          <div class="step rv"><span class="step-n">ШАГ 1</span><div><h3>Заявка и материалы</h3><p>До 25-го числа на выпуск 1-го, до 10-го на выпуск 15-го. Достаточно прислать логотип, телефон и пару фраз.</p></div></div>
+          <div class="step rv"><span class="step-n">ШАГ 2</span><div><h3>Макет бесплатно</h3><p>Дизайнер верстает модуль в едином стиле стенда и присылает на согласование. Печать тоже за наш счёт.</p></div></div>
+          <div class="step rv"><span class="step-n">ШАГ 3</span><div><h3>Выход 1-го и 15-го</h3><p>За день обходим все стенды зоны и меняем листы. Ваш модуль одновременно появляется во всех выбранных лифтах.</p></div></div>
+          <div class="step rv"><span class="step-n">ШАГ 4</span><div><h3>Фотоотчёт и закрывающие документы</h3><p>В течение двух дней присылаем фото по адресам, акт и чек. Через месяц можно поменять макет или продлить размещение со скидкой.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="s" id="clients" data-floor="6" data-name="Кому подходит">
+  <div class="wrap">
+    <div class="s-head rv">
+      <span class="eyebrow">Кому подходит</span>
+      <h2>Местному бизнесу, к которому ходят пешком</h2>
+    </div>
+    <div class="clients">
+      <article class="cl-card c-a rv">
+        <img src="cafe.webp" alt="Владелица пекарни за прилавком">
+        <div class="cl-body"><span class="tag">Кафе, пекарни, доставка</span><h3>Модуль А5 в своей зоне от 3 430 ₽ в месяц</h3><p>Жители соседних домов видят вас утром по пути на работу и вечером по пути домой.</p></div>
+      </article>
+      <article class="cl-card c-b rv">
+        <img src="dental.webp" alt="Администратор стоматологической клиники">
+        <div class="cl-body"><span class="tag">Медицина и услуги</span><h3>Весь город — одна кампания</h3><p>Модуль А4 во всех 207 лифтах. Охватывает две трети города без затрат на печать.</p></div>
+      </article>
+      <aside class="segs rv">
+        <span class="tag">Частые форматы</span>
+        <ul>
+          <li>Такси<span>А3 · зона</span></li>
+          <li>Стоматология<span>А4 · город</span></li>
+          <li>Окна и потолки<span>А2 · город</span></li>
+          <li>Мебель на заказ<span>А4 · 2 зоны</span></li>
+          <li>Салоны красоты<span>А5 · зона</span></li>
+          <li>Частные мастера<span>визитка А7</span></li>
+        </ul>
+        <p class="note">Не размещаем микрозаймы, ставки, политику и 18+. Жители и управляющие компании это ценят.</p>
+      </aside>
+    </div>
+  </div>
+  <div class="marquee" aria-hidden="true">
+    <div class="mq-track">
+      <span>такси</span><i>✦</i><span>стоматология</span><i>✦</i><span>пицца и роллы</span><i>✦</i><span>окна ПВХ</span><i>✦</i><span>мебель на заказ</span><i>✦</i><span>шиномонтаж</span><i>✦</i><span>салон красоты</span><i>✦</i><span>репетиторы</span><i>✦</i><span>аптеки</span><i>✦</i><span>ремонт техники</span><i>✦</i>
+      <span>такси</span><i>✦</i><span>стоматология</span><i>✦</i><span>пицца и роллы</span><i>✦</i><span>окна ПВХ</span><i>✦</i><span>мебель на заказ</span><i>✦</i><span>шиномонтаж</span><i>✦</i><span>салон красоты</span><i>✦</i><span>репетиторы</span><i>✦</i><span>аптеки</span><i>✦</i><span>ремонт техники</span><i>✦</i>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="s alt" id="uk" data-floor="7" data-name="Для УК">
+  <div class="wrap">
+    <div class="uk">
+      <div class="uk-photo rv">
+        <img src="hall.webp" alt="Чистый холл подъезда с информационным стендом">
+        <div class="frame"><img src="frame.webp" alt="Угол антивандальной рамки с замком"></div>
+      </div>
+      <div style="display:grid;gap:28px;min-width:0">
+        <div class="s-head rv" style="margin-bottom:0">
+          <span class="eyebrow">Управляющим компаниям и ТСЖ</span>
+          <h2>Стенд, который работает на дом</h2>
+          <p class="lead">Мы ставим и обслуживаем стенды сами. Дом получает аккуратное место для своих объявлений, а жители — нужные телефоны под рукой.</p>
+        </div>
+        <div class="uk-list">
+          <div class="uk-item rv"><h3>Ячейка дома бесплатно</h3><p>Контакты УК, диспетчерская, аварийные службы, сроки оплаты и показаний. Помогает выполнить требования о раскрытии информации в подъезде.</p></div>
+          <div class="uk-item rv"><h3>Антивандальная конструкция</h3><p>Металлическая рамка А1, прозрачная защитная панель, замок. Крепим за 15 минут, стены не портим.</p></div>
+          <div class="uk-item rv"><h3>Обслуживание за наш счёт</h3><p>Обход два раза в месяц, замена листов, фотоотчёт в УК в тот же день.</p></div>
+          <div class="uk-item rv"><h3>Документы готовим мы</h3><p>Проект договора, акт установки, правила размещения. Начинаем с теста на одном доме.</p></div>
+        </div>
+        <a class="btn btn-ghost rv" href="#contact" style="justify-self:start">Договориться о пилотном доме →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="s" id="contact" data-floor="8" data-name="Контакты">
+  <div class="wrap">
+    <div class="cta rv">
+      <div class="contact-card">
+        <span class="eyebrow">Последний этаж</span>
+        <h2>Поехали наверх</h2>
+        <p class="lead">Позвоните или соберите заявку. Ответим в тот же день, а макет пришлём за два рабочих дня.</p>
+        <div class="person"><span class="ava">ИД</span><div><div style="font-weight:600">Илья Досмедов</div><div style="color:var(--steel);font-size:14px">Наш дом. Медиа, Удомля</div></div></div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span class="phone" id="phone">8 (995) 500-71-80</span>
+          <button class="btn btn-ghost" type="button" id="copyPhone" style="padding:10px 16px;font-size:14px">Скопировать</button>
+        </div>
+      </div>
+      <form class="req" id="req" novalidate>
+        <div class="row2">
+          <input class="inp" id="fName" name="name" placeholder="Ваше имя" autocomplete="name">
+          <input class="inp" id="fPhone" name="phone" placeholder="Телефон" autocomplete="tel" inputmode="tel">
+        </div>
+        <input class="inp" id="fBiz" name="biz" placeholder="Компания или вид деятельности">
+        <select class="inp" id="fWho" name="who">
+          <option value="Рекламодатель">Я хочу разместить рекламу</option>
+          <option value="Управляющая компания / ТСЖ">Я из управляющей компании или ТСЖ</option>
+        </select>
+        <textarea class="inp" id="fMsg" name="msg" rows="3" placeholder="Комментарий"></textarea>
+        <button class="btn btn-main" type="submit" style="justify-self:start">Собрать заявку</button>
+        <div class="out" id="out" hidden>
+          <span style="color:var(--brass-2);font-weight:600">Заявка готова. Скопируйте её и отправьте в мессенджер на номер 8 (995) 500-71-80.</span>
+          <pre id="outText"></pre>
+          <button class="btn btn-ghost" type="button" id="copyReq" style="justify-self:start;padding:10px 16px;font-size:14px">Скопировать заявку</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Наш дом. Медиа · стенды в лифтах Удомли</span>
+    <span>Тверская область · 67 домов · 207 лифтов</span>
+  </div>
+</footer>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const fmt=n=>Math.round(n).toLocaleString('ru-RU');
+
+/* ---- data ---- */
+const ZONES=[
+ {n:'З1',name:'Попова',streets:'Попова, Новая, Весенняя, К. Маркса',lifts:51,flats:1608,houses:14},
+ {n:'З2',name:'Космонавтов',streets:'Космонавтов, Автодорожная, Александрова',lifts:53,flats:1933,houses:18},
+ {n:'З3',name:'Курчатова',streets:'пр-кт Курчатова, Энергетиков, Левитана',lifts:54,flats:1971,houses:17},
+ {n:'З4',name:'Энтузиастов',streets:'Энтузиастов, Энергетиков, Венецианова',lifts:49,flats:1670,houses:18}
+];
+/* base: ₽ за стенд в месяц; cells: сколько под-ячеек (1/8 ячейки А4) занимает модуль, всего 7×8 продаваемых */
+const FORMATS=[
+ {id:'A1',base:700,sub:56,hint:'весь стенд'},
+ {id:'A2',base:400,sub:32,hint:'½ стенда'},
+ {id:'A3',base:220,sub:16,hint:'2 ячейки'},
+ {id:'A4',base:120,sub:8,hint:'1 ячейка'},
+ {id:'A5',base:70,sub:4,hint:'½ ячейки'},
+ {id:'A6',base:40,sub:2,hint:'¼ ячейки'},
+ {id:'A7',base:25,sub:1,hint:'визитка'}
+];
+const TERMS=[{m:1,d:0,t:'1 месяц'},{m:3,d:.10,t:'3 месяца'},{m:6,d:.15,t:'6 месяцев'},{m:12,d:.25,t:'12 месяцев'}];
+const st={f:3,z:new Set([2]),t:0};
+
+/* ---- board ---- */
+const board=$('#board');
+for(let i=0;i<8;i++){
+  const c=document.createElement('div');
+  if(i===7){c.className='cell house';c.innerHTML='<span>ЯЧЕЙКА ДОМА</span><b>Ваш дом</b><span>УК · диспетчерская<br>112 · ЕДДС</span>';}
+  else{c.className='cell';for(let k=0;k<8;k++){const s=document.createElement('div');s.className='sub';c.appendChild(s);}}
+  board.appendChild(c);
+}
+/* порядок заполнения: блоки ISO — сначала внутри ячейки, затем соседние ячейки в 2×2, затем вся сетка */
+const cellOrder=[0,1,4,5,2,3,6];
+function paintBoard(){
+  const need=FORMATS[st.f].sub;
+  const subs=[];
+  cellOrder.forEach(ci=>{const cell=board.children[ci];[0,1,2,3,4,5,6,7].forEach(k=>subs.push(cell.children[k]));});
+  subs.forEach((s,i)=>{s.classList.toggle('on',i<need);});
+}
+
+/* ---- chips ---- */
+function chip(html,pressed,on){const b=document.createElement('button');b.type='button';b.className='chip';b.innerHTML=html;b.setAttribute('aria-pressed',pressed);b.addEventListener('click',on);return b;}
+function renderChips(){
+  const fw=$('#formats');fw.innerHTML='';
+  FORMATS.forEach((f,i)=>fw.appendChild(chip(`${f.id}<small>${f.hint}</small>`,i===st.f,()=>{st.f=i;update();})));
+  const zw=$('#zonesChips');zw.innerHTML='';
+  ZONES.forEach((z,i)=>zw.appendChild(chip(`${z.name}<small>${z.lifts} лифтов</small>`,st.z.has(i),()=>toggleZone(i))));
+  zw.appendChild(chip(`Весь город<small>207 лифтов</small>`,st.z.size===4,()=>{st.z=st.z.size===4?new Set([2]):new Set([0,1,2,3]);update();}));
+  const tw=$('#terms');tw.innerHTML='';
+  TERMS.forEach((t,i)=>tw.appendChild(chip(`${t.t}<small>${t.d?'−'+Math.round(t.d*100)+' %':'без скидки'}</small>`,i===st.t,()=>{st.t=i;update();})));
+}
+function toggleZone(i){if(st.z.has(i)){if(st.z.size>1)st.z.delete(i);}else st.z.add(i);update();}
+
+/* ---- zone list + map ---- */
+const zl=$('#zlist');
+ZONES.forEach((z,i)=>{
+  const b=document.createElement('button');b.type='button';b.className='zrow rv';b.dataset.z=i;
+  b.innerHTML=`<span class="zn">${z.n}</span><div><h3>${z.name}</h3><p>${z.streets} · ${z.houses} домов</p></div><span class="zl">${z.lifts}<small>ЛИФТОВ</small></span>`;
+  b.addEventListener('click',()=>toggleZone(i));zl.appendChild(b);
+});
+document.querySelectorAll('.zone-shape').forEach(g=>g.addEventListener('click',()=>toggleZone(+g.dataset.z)));
+
+/* ---- calc ---- */
+let shown=0;
+function animateTo(el,to){
+  const from=shown,t0=performance.now(),dur=500;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){el.textContent=fmt(to);shown=to;return;}
+  function step(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(step);else shown=to;}
+  requestAnimationFrame(step);
+}
+let last={};
+function update(){
+  renderChips();paintBoard();
+  const f=FORMATS[st.f],term=TERMS[st.t];
+  let lifts=0,flats=0;st.z.forEach(i=>{lifts+=ZONES[i].lifts;flats+=ZONES[i].flats;});
+  const geo=st.z.size===4?.15:st.z.size>=2?.10:0;
+  const disc=1-(1-geo)*(1-term.d);
+  const month=Math.round(f.base*lifts*(1-geo)*(1-term.d)/10)*10;
+  animateTo($('#pMonth'),month);
+  $('#rLifts').textContent=lifts;
+  $('#rFlats').textContent=fmt(flats);
+  $('#rDisc').textContent=Math.round(disc*100)+' %';
+  $('#rTotal').textContent=fmt(month*term.m)+' ₽';
+  $('#rPer').textContent=(month/(flats*2.2)).toLocaleString('ru-RU',{maximumFractionDigits:2,minimumFractionDigits:2})+' ₽';
+  document.querySelectorAll('.zone-shape').forEach(g=>g.classList.toggle('sel',st.z.has(+g.dataset.z)));
+  document.querySelectorAll('.zrow').forEach(r=>r.classList.toggle('sel',st.z.has(+r.dataset.z)));
+  last={f:f.id,zones:[...st.z].sort().map(i=>ZONES[i].name).join(', '),term:term.t,month};
+}
+update();
+$('#toForm').addEventListener('click',()=>{
+  const m=$('#fMsg');m.value=`Расчёт: модуль ${last.f}, зоны: ${last.zones}, срок ${last.term}, ≈ ${fmt(last.month)} ₽/мес.`;
+});
+
+/* ---- waves: 1-е и 15-е ---- */
+const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const now=new Date();const d=now.getDate(),m=now.getMonth(),y=now.getFullYear();
+let wave,dead;
+if(d<=10){wave=new Date(y,m,15);dead=new Date(y,m,10);}
+else if(d<=25){wave=new Date(y,m+1,1);dead=new Date(y,m,25);}
+else{wave=new Date(y,m+1,15);dead=new Date(y,m+1,10);}
+const human=x=>x.getDate()+' '+MONTHS[x.getMonth()];
+$('#nextWave').textContent=human(wave);$('#nextDeadline').textContent=human(dead);
+/* календарь месяца ближайшего выпуска */
+(function(){
+  const cal=$('#cal');const cy=wave.getFullYear(),cm=wave.getMonth();
+  const name=new Date(cy,cm,1).toLocaleString('ru-RU',{month:'long'})+' '+cy;
+  let h=`<b>${name}</b>`;['пн','вт','ср','чт','пт','сб','вс'].forEach(x=>h+=`<span style="opacity:.55">${x}</span>`);
+  const first=(new Date(cy,cm,1).getDay()+6)%7, days=new Date(cy,cm+1,0).getDate();
+  for(let i=0;i<first;i++)h+='<span></span>';
+  for(let i=1;i<=days;i++){const cls=(i===1||i===15)?'w':(i===10||i===25)?'d':'';h+=`<span class="${cls}">${i}</span>`;}
+  cal.innerHTML=h;
+})();
+
+/* ---- counters ---- */
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const to=+el.dataset.count;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const t0=performance.now()+300,dur=1600;
+  (function step(t){const p=Math.max(0,Math.min(1,(t-t0)/dur)),e=1-Math.pow(1-p,4);el.textContent=fmt(to*e||0);if(p<1)requestAnimationFrame(step);else el.textContent=fmt(to);})(performance.now());
+});
+/* hero lift panel counts up to 9 */
+(function(){const el=$('#liftCount');let n=1;if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=9;return;}
+  const iv=setInterval(()=>{n++;el.textContent=n;if(n>=9)clearInterval(iv);},230);})();
+
+/* ---- floor indicator ---- */
+const fNum=$('#fNum'),fLabel=$('#fLabel'),fArrow=$('#fArrow');let cur=1;
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting){const n=+e.target.dataset.floor;if(n!==cur){fArrow.classList.toggle('down',n<cur);cur=n;fNum.textContent=n;fNum.classList.remove('flip');void fNum.offsetWidth;fNum.classList.add('flip');fLabel.innerHTML='Этаж<br>'+e.target.dataset.name;}}});
+},{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('[data-floor]').forEach(s=>io.observe(s));
+
+/* ---- copy + form ---- */
+function copy(text,btn,src){
+  const done=()=>{const o=btn.textContent;btn.textContent='Скопировано';setTimeout(()=>btn.textContent=o,1600);};
+  try{navigator.clipboard.writeText(text).then(done).catch(()=>sel(src));}catch(e){sel(src);}
+  function sel(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Выделено, нажмите Ctrl+C';}
+}
+$('#copyPhone').addEventListener('click',e=>copy('89955007180',e.currentTarget,$('#phone')));
+$('#req').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=id=>$(id).value.trim();
+  if(!v('#fPhone')){$('#fPhone').focus();$('#fPhone').placeholder='Укажите телефон, чтобы мы перезвонили';return;}
+  const text=`Заявка — Наш дом. Медиа\n${v('#fWho')}\nИмя: ${v('#fName')||'—'}\nТелефон: ${v('#fPhone')}\nКомпания: ${v('#fBiz')||'—'}\n${v('#fMsg')}`.trim();
+  $('#outText').textContent=text;$('#out').hidden=false;
+});
+$('#copyReq').addEventListener('click',e=>copy($('#outText').textContent,e.currentTarget,$('#outText')));
+})();
+</script>
+
+</body>
+</html>
