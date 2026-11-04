@@ -395,7 +395,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
             <span>Итого за срок</span><b id="rTotal">0 ₽</b>
             <span>За одного жителя в месяц</span><b id="rPer">0 ₽</b>
           </div>
-          <p class="note">Это ориентир по базовому прайсу. Если выбираете отдельные адреса, а не зону, цена выше на 30 %. Эксклюзив в категории (например, единственное такси на стенде) обсуждаем отдельно.</p>
+          <p class="note"><b style="color:var(--brass-2)">Первым 15 клиентам −30 %</b> с фиксацией цены на 6 месяцев. Частным мастерам — «Справочник мастеров»: визитка в своей зоне за 990 ₽ в месяц при оплате за 3 месяца. Это ориентир по базовому прайсу. Если выбираете отдельные адреса, а не зону, цена выше на 30 %. Эксклюзив в категории (например, единственное такси на стенде) обсуждаем отдельно.</p>
           <a class="btn btn-main" href="#contact" id="toForm" style="justify-self:start">Оставить заявку на этот расчёт →</a>
         </div>
       </div>
@@ -465,7 +465,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
     <div class="clients">
       <article class="cl-card c-a rv">
         <img src="cafe.webp" alt="Владелица пекарни за прилавком">
-        <div class="cl-body"><span class="tag">Кафе, пекарни, доставка</span><h3>Модуль А5 в своей зоне от 3 430 ₽ в месяц</h3><p>Жители соседних домов видят вас утром по пути на работу и вечером по пути домой.</p></div>
+        <div class="cl-body"><span class="tag">Кафе, пекарни, доставка</span><h3>Модуль А5 в своей зоне от 5 640 ₽ в месяц</h3><p>Жители соседних домов видят вас утром по пути на работу и вечером по пути домой.</p></div>
       </article>
       <article class="cl-card c-b rv">
         <img src="dental.webp" alt="Администратор стоматологической клиники">
@@ -577,15 +577,15 @@ const ZONES=[
 ];
 /* base: ₽ за стенд в месяц; cells: сколько под-ячеек (1/8 ячейки А4) занимает модуль, всего 7×8 продаваемых */
 const FORMATS=[
- {id:'A1',base:700,sub:56,hint:'весь стенд'},
- {id:'A2',base:400,sub:32,hint:'½ стенда'},
- {id:'A3',base:220,sub:16,hint:'2 ячейки'},
- {id:'A4',base:120,sub:8,hint:'1 ячейка'},
- {id:'A5',base:70,sub:4,hint:'½ ячейки'},
- {id:'A6',base:40,sub:2,hint:'¼ ячейки'},
- {id:'A7',base:25,sub:1,hint:'визитка'}
+ {id:'A1',base:1100,sub:56,hint:'весь стенд'},
+ {id:'A2',base:640,sub:32,hint:'½ стенда'},
+ {id:'A3',base:360,sub:16,hint:'2 ячейки'},
+ {id:'A4',base:200,sub:8,hint:'1 ячейка'},
+ {id:'A5',base:115,sub:4,hint:'½ ячейки'},
+ {id:'A6',base:65,sub:2,hint:'¼ ячейки'},
+ {id:'A7',base:40,sub:1,hint:'визитка'}
 ];
-const TERMS=[{m:1,d:0,t:'1 месяц'},{m:3,d:.10,t:'3 месяца'},{m:6,d:.15,t:'6 месяцев'},{m:12,d:.25,t:'12 месяцев'}];
+const TERMS=[{m:1,d:0,t:'1 месяц'},{m:3,d:.05,t:'3 месяца'},{m:6,d:.10,t:'6 месяцев'},{m:12,d:.15,t:'12 месяцев'}];
 const st={f:3,z:new Set([2]),t:0};
 
 /* ---- board ---- */
@@ -641,7 +641,7 @@ function update(){
   renderChips();paintBoard();
   const f=FORMATS[st.f],term=TERMS[st.t];
   let lifts=0,flats=0;st.z.forEach(i=>{lifts+=ZONES[i].lifts;flats+=ZONES[i].flats;});
-  const geo=st.z.size===4?.15:st.z.size>=2?.10:0;
+  const geo=st.z.size===4?.10:st.z.size>=2?.05:0;
   const disc=1-(1-geo)*(1-term.d);
   const month=Math.round(f.base*lifts*(1-geo)*(1-term.d)/10)*10;
   animateTo($('#pMonth'),month);
