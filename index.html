@@ -312,6 +312,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
 .partner-mark{width:48px;height:48px;border-radius:14px;flex:none;background:linear-gradient(135deg,#3b82f6,#7c3aed);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:20px}
 @media (max-width:980px){.leads{grid-template-columns:1fr}.tariffs{grid-template-columns:1fr}}
 
+
+/* ---------- promo video ---------- */
+.promo{padding-block:0 clamp(56px,8vw,100px)}
+.promo-box{position:relative;border-radius:26px;overflow:hidden;border:1px solid var(--line);box-shadow:0 50px 100px -40px rgba(0,0,0,.9);background:#05080f;aspect-ratio:16/9;max-width:100%}
+.promo-box video{width:100%;height:100%;display:block;object-fit:cover;background:#05080f}
+.promo-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.promo-head h2{font-size:clamp(26px,3.2vw,40px)}
+.promo-head p{color:var(--steel);font-size:15px;max-width:46ch}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important}
   .mq-track{animation:none}
@@ -356,7 +365,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
         <p class="lead">Информационные стенды А1 в кабинах 207 лифтов города. Каждый житель видит ваш модуль по 2–4 раза в день и смотрит на него 20–40 секунд, пока едет на свой этаж.</p>
         <div class="hero-ctas">
           <a class="btn btn-main" href="#price">Рассчитать стоимость →</a>
-          <a class="btn btn-ghost" href="#uk">Я из управляющей компании</a>
+          <a class="btn btn-ghost" href="#video">▶ Смотреть ролик</a>
         </div>
         <div class="ticker"><span class="dot"></span><span>Следующий выпуск: <b id="nextWave">—</b></span><span>Приём макетов до <b id="nextDeadline">—</b></span></div>
       </div>
@@ -372,6 +381,21 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
       <div class="stat"><span class="stat-n" data-count="67">67</span><span class="stat-t">многоэтажных домов, 6–16 этажей</span></div>
       <div class="stat"><span class="stat-n"><span data-count="15500">15 500</span></span><span class="stat-t">жителей видят стенды каждый день</span></div>
       <div class="stat"><span class="stat-n"><span data-count="63">63</span><small>%</small></span><span class="stat-t">населения города</span></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="promo" id="video" aria-label="Ролик">
+  <div class="wrap">
+    <div class="promo-head rv">
+      <div style="display:grid;gap:12px"><span class="eyebrow">Ролик · 36 секунд</span><h2>Как это работает: от лифта до заказа</h2></div>
+      <p>Стенд в лифте, QR-код, ИИ-бот от NeuraLead принимает заказ, а вы получаете отчёт, сколько клиентов пришло из лифтов.</p>
+    </div>
+    <div class="promo-box rv">
+      <video id="promoVideo" controls playsinline preload="metadata" poster="promo-poster.jpg">
+        <source src="promo.mp4" type="video/mp4">
+      </video>
     </div>
   </div>
 </section>
